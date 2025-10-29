@@ -1,0 +1,109 @@
+---
+layout: page
+title: 地点详情 / Site Detail
+permalink: /place.html
+---
+
+<div id="placeHeader">载入地点...</div>
+<hr/>
+<h2>本地点采录的山歌 / Songs from this site</h2>
+<div id="songsFromPlace">载入山歌...</div>
+
+<script>
+function getQueryParam(key) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(key);
+}
+
+const placeId = getQueryParam("id");
+const placeHeader = document.getElementById('placeHeader');
+const songsFromPlace = document.getElementById('songsFromPlace');
+
+let allLocations = [];
+let allSongs = [];
+
+Promise.all([
+  fetch('{{ "/assets/data/locations.json" | relative_url }}').then(r=>r.json()),
+  fetch('{{ "/assets/data/songs.json" | relative_url }}').then(r=>r.json())
+]).then(([locations, songs])=>{
+  allLocations = locations;
+  allSongs = songs;
+
+  const loc = allLocations.find(l => l.id === placeId);
+  if(!loc){
+    placeHeader.innerHTML = "<p>未找到地点 "+escapeHTML(placeId)+"</p>";
+    songsFromPlace.innerHTML = "";
+    return;
+  }
+
+  placeHeader.innerHTML = `
+    <h1 style="margin-bottom:0.2rem;">${escapeHTML(loc.name_zh)}
+      <span style="color:#888;font-weight:400;font-size:0.8rem;margin-left:0.4rem;">
+        ${escapeHTML(loc.name_en || "")}
+      </span>
+    </h1>
+
+    <div style="font-size:0.9rem;color:#444;line-height:1.5;margin-bottom:0.5rem;">
+      ${escapeHTML(loc.admin_full || "")}<br/>
+      坐标: ${loc.geo ? escapeHTML(loc.geo.lat + ", " + loc.geo.lon) : "无坐标"}
+    </div>
+
+    <div style="font-size:0.9rem;color:#222;line-height:1.5;">
+      ${escapeHTML(loc.notes || "")}
+    </div>
+  `;
+
+  const songsHere = allSongs.filter(s => s.location_id === placeId);
+
+  songsFromPlace.innerHTML = "";
+  if(!songsHere.length){
+    songsFromPlace.innerHTML = "<p>暂无记录。</p>";
+    return;
+  }
+
+  songsHere.forEach(song=>{
+    const songUrl = "{{ '/song.html' | relative_url }}" + "?id=" + encodeURIComponent(song.id);
+
+    const card = document.createElement('div');
+    card.style.border = "1px solid #ccc";
+    card.style.borderRadius = "8px";
+    card.style.padding = "1rem 1.2rem";
+    card.style.marginBottom = "1rem";
+    card.style.background = "#fff";
+
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:600;font-size:1.05rem;">
+            <a href="${songUrl}">${escapeHTML(song.title?.zh || "(无标题)")}</a>
+            <span style="color:#888;font-weight:400;font-size:0.8rem;margin-left:0.4rem;">
+              ${escapeHTML(song.id || "")}
+            </span>
+          </div>
+          <div style="font-size:0.8rem;color:#666;line-height:1.4;">
+            演唱者：${escapeHTML(song.singer?.name || "未知")}
+            ${song.singer?.gender ? " · " + escapeHTML(song.singer.gender) : ""}
+            ${song.singer?.age ? " · " + escapeHTML(song.singer.age + "岁") : ""}<br/>
+            采集日期：${escapeHTML(song.collection?.date || "未知")}
+          </div>
+        </div>
+        <div style="font-size:0.8rem;color:#666;max-width:260px;line-height:1.4;">
+          ${escapeHTML(song.collection?.session_note || "")}
+        </div>
+      </div>
+    `;
+
+    songsFromPlace.appendChild(card);
+  });
+
+}).catch(err=>{
+  console.error(err);
+  placeHeader.textContent = "载入出错";
+  songsFromPlace.textContent = "";
+});
+
+function escapeHTML(str){
+  if(!str) return "";
+  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+</script>

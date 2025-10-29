@@ -1,0 +1,125 @@
+---
+layout: page
+title: 山歌总览 / All Songs
+permalink: /songs/
+---
+
+<div style="margin-bottom:1.5rem;">
+  <input id="searchBox" style="width:100%;max-width:400px;border:1px solid #aaa;border-radius:6px;padding:0.5rem 0.75rem;font-size:1rem;"
+         placeholder="搜索：标题 / 歌手 / 地点 / 歌词片段 / ID">
+  <div style="font-size:0.8rem;color:#666;margin-top:0.4rem;">
+    支持搜壮语转写、中文、英文、地点。例如“月亮”“勒马屯”“hard to watch”。
+  </div>
+</div>
+
+<div id="summaryBar" style="font-size:0.85rem;margin-bottom:1rem;color:#444;">载入中...</div>
+<div id="songList">载入中...</div>
+
+<script>
+const searchBox   = document.getElementById('searchBox');
+const summaryBar  = document.getElementById('summaryBar');
+const songList    = document.getElementById('songList');
+
+let SONGS = [];
+let LOCS = {};
+
+Promise.all([
+  fetch('{{ "/assets/data/songs.json" | relative_url }}').then(r=>r.json()),
+  fetch('{{ "/assets/data/locations.json" | relative_url }}').then(r=>r.json())
+]).then(([songs,locations])=>{
+  SONGS = songs;
+  locations.forEach(l => { LOCS[l.id] = l.name_zh; });
+
+  renderList(SONGS);
+  updateSummary(SONGS.length, SONGS.length);
+
+  searchBox.addEventListener('input', ()=>{
+    const kw = searchBox.value.trim().toLowerCase();
+    const filtered = SONGS.filter(s => matchSong(s, kw));
+    renderList(filtered);
+    updateSummary(filtered.length, SONGS.length);
+  });
+}).catch(err=>{
+  console.error(err);
+  summaryBar.textContent = "载入失败";
+  songList.textContent = "";
+});
+
+function renderList(arr){
+  songList.innerHTML = "";
+  arr.forEach(song=>{
+    const songUrl = "{{ '/song.html' | relative_url }}"+"?id="+encodeURIComponent(song.id);
+    const placeUrl = "{{ '/place.html' | relative_url }}"+"?id="+encodeURIComponent(song.location_id||"");
+
+    const locName = LOCS[song.location_id] || song.location_id || "未知地点";
+
+    const card = document.createElement('div');
+    card.style.border = "1px solid #ccc";
+    card.style.borderRadius = "8px";
+    card.style.padding = "1rem 1.2rem";
+    card.style.marginBottom = "1rem";
+    card.style.background = "#fff";
+
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:600;font-size:1.05rem;">
+            <a href="${songUrl}">${escapeHTML(song.title?.zh || "(无标题)")}</a>
+            <span style="color:#888;font-weight:400;font-size:0.8rem;margin-left:0.4rem;">
+              ${escapeHTML(song.id || "")}
+            </span>
+          </div>
+          <div style="font-size:0.8rem;color:#666;line-height:1.4;">
+            演唱者：${escapeHTML(song.singer?.name || "未知")}
+            ${song.singer?.gender ? " · " + escapeHTML(song.singer.gender) : ""}
+            ${song.singer?.age ? " · " + escapeHTML(song.singer.age + "岁") : ""}<br/>
+            采集日期：${escapeHTML(song.collection?.date || "未知")}
+          </div>
+        </div>
+
+        <div style="font-size:0.8rem;color:#666;line-height:1.4;max-width:260px;">
+          ${escapeHTML(song.collection?.session_note || "")}
+        </div>
+      </div>
+
+      <div style="font-size:0.8rem;color:#444;line-height:1.4;margin-top:0.5rem;">
+        地点：
+        <a href="${placeUrl}">
+          ${escapeHTML(locName)}
+        </a>
+      </div>
+    `;
+    songList.appendChild(card);
+  });
+}
+
+function matchSong(song, kw){
+  if(!kw) return true;
+  const locName = LOCS[song.location_id] || "";
+  let bag = "";
+
+  bag += (song.id||"")+" ";
+  bag += (song.title?.zh||"")+" "+(song.title?.en||"")+" ";
+  bag += (song.singer?.name||"")+" ";
+  bag += locName+" ";
+  bag += (song.collection?.session_note||"")+" ";
+
+  (song.lines||[]).forEach(line=>{
+    bag += (line.za_line||"")+" ";
+    bag += (line.zh_line||"")+" ";
+    bag += (line.en_line||"")+" ";
+  });
+
+  bag = bag.toLowerCase();
+  return bag.includes(kw);
+}
+
+function updateSummary(showing,total){
+  summaryBar.textContent = `共 ${total} 条记录，当前显示 ${showing} 条。`;
+}
+
+function escapeHTML(str){
+  if(!str) return "";
+  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+</script>

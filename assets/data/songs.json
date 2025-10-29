@@ -1,0 +1,90 @@
+[
+  {
+    "id": "hx-20250712-01",
+    "title": {
+      "zh": "放牛歌开场段",
+      "za": "san gau lou yuan niu nan fang (示例转写，可改)",
+      "en": "Opening Cattle-Grazing Song"
+    },
+    "singer": {
+      "name": "覃某兰",
+      "gender": "F",
+      "age": 63
+    },
+    "location_id": "lema_tun",
+    "collection": {
+      "date": "2025-07-12",
+      "collector": "覃俊佳 (Boka Qin)",
+      "session_note": "她先用‘放牛歌’自我介绍身份，强调劳作而不是情歌。典型老一辈女性开场套路。"
+    },
+    "media": {
+      "audio": "hx-20250712-01.mp3",
+      "scan": "hx-20250712-01-notes.jpg"
+    },
+    "lines": [
+      {
+        "za_line": "san gau lou yuan niu nan fang ya",
+        "zh_line": "山高路远牛不好放呀，",
+        "en_line": "The hills are steep; the cattle are hard to watch.",
+        "morphemes": [
+          { "za_word": "san-gau", "zh_gloss": "山-高", "en_gloss": "mountain-high" },
+          { "za_word": "lou-yuan", "zh_gloss": "路-远", "en_gloss": "road-far" },
+          { "za_word": "niu", "zh_gloss": "牛", "en_gloss": "cattle" },
+          { "za_word": "nan-fang", "zh_gloss": "难-放(看管)", "en_gloss": "hard-to-herd" },
+          { "za_word": "ya", "zh_gloss": "语气词", "en_gloss": "particle" }
+        ]
+      },
+      {
+        "za_line": "jit thou chu lai ngo jiu xing",
+        "zh_line": "日头出来我就行，",
+        "en_line": "Once the sun is up, I'm already on the move.",
+        "morphemes": [
+          { "za_word": "jit-thou", "zh_gloss": "日头(太阳)", "en_gloss": "sun" },
+          { "za_word": "chu-lai", "zh_gloss": "出来", "en_gloss": "come-out" },
+          { "za_word": "ngo", "zh_gloss": "我", "en_gloss": "I" },
+          { "za_word": "jiu", "zh_gloss": "就", "en_gloss": "then/already" },
+          { "za_word": "xing", "zh_gloss": "行(走/出发)", "en_gloss": "go/set-off" }
+        ]
+      }
+    ]
+  },
+
+  {
+    "id": "hx-20250712-02",
+    "title": {
+      "zh": "对唱挑逗段",
+      "za": "",
+      "en": "Flirtatious Call-and-Response"
+    },
+    "singer": {
+      "name": "蓝某华",
+      "gender": "M",
+      "age": 58
+    },
+    "location_id": "lema_tun",
+    "collection": {
+      "date": "2025-07-12",
+      "collector": "覃俊佳 (Boka Qin)",
+      "session_note": "典型调情试探：'别太高调，不然你妈知道' 这种月亮作证的隐喻。"
+    },
+    "media": {
+      "audio": "hx-20250712-02.mp3",
+      "scan": "hx-20250712-02-notes.jpg"
+    },
+    "lines": [
+      {
+        "za_line": "ni jiang yi ju wo hui yi ju",
+        "zh_line": "你讲一句我回一句，",
+        "en_line": "You sing one line, I answer one line,",
+        "morphemes": [
+          { "za_word": "ni", "zh_gloss": "你", "en_gloss": "you" },
+          { "za_word": "jiang", "zh_gloss": "讲/唱", "en_gloss": "sing/say" },
+          { "za_word": "yi-ju", "zh_gloss": "一-句", "en_gloss": "one-line" },
+          { "za_word": "wo", "zh_gloss": "我", "en_gloss": "I" },
+          { "za_word": "hui", "zh_gloss": "回(应)", "en_gloss": "answer" },
+          { "za_word": "yi-ju", "zh_gloss": "一-句", "en_gloss": "one-line" }
+        ]
+      }
+    ]
+  }
+]

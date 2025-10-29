@@ -1,0 +1,145 @@
+---
+layout: page
+title: 歌曲详情 / Song Detail
+permalink: /song.html
+---
+
+<div id="songHeader">载入歌曲...</div>
+<hr/>
+<div id="songLines">载入逐句...</div>
+
+<script>
+function getQueryParam(key){
+  const params = new URLSearchParams(window.location.search);
+  return params.get(key);
+}
+const songId = getQueryParam("id");
+
+const songHeader = document.getElementById('songHeader');
+const songLines  = document.getElementById('songLines');
+
+let SONGS = [];
+let LOCS = {};
+
+Promise.all([
+  fetch('{{ "/assets/data/songs.json" | relative_url }}').then(r=>r.json()),
+  fetch('{{ "/assets/data/locations.json" | relative_url }}').then(r=>r.json())
+]).then(([songs,locations])=>{
+  SONGS = songs;
+  locations.forEach(l => { LOCS[l.id] = l; });
+
+  const s = SONGS.find(x => x.id === songId);
+  if(!s){
+    songHeader.innerHTML = "<p>未找到歌曲 "+escapeHTML(songId)+"</p>";
+    songLines.innerHTML = "";
+    return;
+  }
+
+  const locObj = LOCS[s.location_id] || {};
+  const placeUrl = "{{ '/place.html' | relative_url }}"+"?id="+encodeURIComponent(s.location_id||"");
+
+  songHeader.innerHTML = `
+    <h1 style="margin-bottom:0.2rem;">
+      ${escapeHTML(s.title?.zh || "(无标题)")}
+      <span style="color:#888;font-weight:400;font-size:0.8rem;margin-left:0.4rem;">
+        ${escapeHTML(s.id || "")}
+      </span>
+    </h1>
+
+    <div style="font-size:0.9rem;color:#444;line-height:1.5;margin-bottom:0.5rem;">
+      演唱者：${escapeHTML(s.singer?.name || "未知")}
+      ${s.singer?.gender ? " · " + escapeHTML(s.singer.gender) : ""}
+      ${s.singer?.age ? " · " + escapeHTML(s.singer.age + "岁") : ""}<br/>
+      采集日期：${escapeHTML(s.collection?.date || "未知")}
+    </div>
+
+    <div style="font-size:0.9rem;color:#444;line-height:1.5;margin-bottom:0.5rem;">
+      地点：
+      <a href="${placeUrl}">
+        ${escapeHTML(locObj.name_zh || s.location_id || "未知地点")}
+      </a><br/>
+      ${escapeHTML(locObj.admin_full || "")}<br/>
+      坐标: ${locObj.geo ? escapeHTML(locObj.geo.lat + ", " + locObj.geo.lon) : "无坐标"}
+    </div>
+
+    <div style="font-size:0.9rem;color:#222;line-height:1.5;margin-bottom:0.5rem;">
+      田野备注 / Field note:<br/>
+      ${escapeHTML(s.collection?.session_note || "")}
+    </div>
+
+    <div style="font-size:0.9rem;color:#444;line-height:1.5;margin-bottom:0.5rem;">
+      媒体 / Media:
+      ${s.media?.audio ? `<a href="{{ "/assets/audio/" | relative_url }}${encodeURIComponent(s.media.audio)}" target="_blank">音频</a>` : ""}
+      ${s.media?.scan  ? ` · <a href="{{ "/assets/scans/" | relative_url }}${encodeURIComponent(s.media.scan)}" target="_blank">手稿扫描</a>` : ""}
+    </div>
+  `;
+
+  songLines.innerHTML = "";
+  (s.lines || []).forEach((lineObj, idx) => {
+    const block = document.createElement('div');
+    block.style.marginBottom = "2rem";
+
+    const za = escapeHTML(lineObj.za_line || "");
+    const zh = escapeHTML(lineObj.zh_line || "");
+    const en = escapeHTML(lineObj.en_line || "");
+
+    const morphemeTable = renderMorphemeTable(lineObj.morphemes || []);
+
+    block.innerHTML = `
+      <div style="font-weight:600;font-size:1rem;margin-bottom:0.25rem;">
+        第 ${idx+1} 句
+      </div>
+
+      <div style="font-size:0.9rem;line-height:1.5;margin-bottom:0.5rem;">
+        <div><strong>壮语(转写)</strong>：${za}</div>
+        <div><strong>中文</strong>：${zh}</div>
+        <div><strong>English</strong>：${en}</div>
+      </div>
+
+      ${morphemeTable}
+    `;
+
+    songLines.appendChild(block);
+  });
+
+}).catch(err=>{
+  console.error(err);
+  songHeader.textContent = "载入出错";
+  songLines.textContent = "";
+});
+
+function renderMorphemeTable(morphs){
+  if(!morphs.length){
+    return `<div style="font-size:0.8rem;color:#888;">无逐词拆解</div>`;
+  }
+
+  let row1 = "";
+  let row2 = "";
+  let row3 = "";
+  morphs.forEach(m=>{
+    row1 += `<td style="padding:4px 6px;border:1px solid #ccc;font-size:0.8rem;font-weight:600;">${escapeHTML(m.za_word||"")}</td>`;
+    row2 += `<td style="padding:4px 6px;border:1px solid #ccc;font-size:0.8rem;">${escapeHTML(m.zh_gloss||"")}</td>`;
+    row3 += `<td style="padding:4px 6px;border:1px solid #ccc;font-size:0.8rem;color:#444;">${escapeHTML(m.en_gloss||"")}</td>`;
+  });
+
+  return `
+    <div style="overflow-x:auto;">
+      <table style="border-collapse:collapse;border:1px solid #ccc;margin-bottom:0.5rem;">
+        <tr>${row1}</tr>
+        <tr>${row2}</tr>
+        <tr>${row3}</tr>
+      </table>
+    </div>
+    <div style="font-size:0.7rem;color:#666;line-height:1.4;margin-bottom:1rem;">
+      第1行：壮语/毛南语词或词素转写<br/>
+      第2行：逐词中文义（直译/词素）<br/>
+      第3行：逐词英文义（语法功能/对应义）
+    </div>
+  `;
+}
+
+function escapeHTML(str){
+  if(!str) return "";
+  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+</script>

@@ -1,21 +1,11 @@
----
-# find all unique locations used in the metadata
----
-{%- if site.data.theme.locations-fields -%}
-{%- assign cloud-fields = site.data.theme.subjects-fields | split: ";" -%}
-{% comment %} Capture all cloud terms {% endcomment %} 
-{%- assign raw-terms = "" -%}
-{%- for c in cloud-fields -%}
-{% assign new = site.data[site.metadata] | map: c | compact | join: ";" %}
-{% assign raw-terms = raw-terms | append: ";" | append: new %}
-{%- endfor -%}
-{%- assign raw-terms = raw-terms | downcase | split: ";" -%}
-{% comment %} Clean up raw terms {% endcomment %} 
-{%- capture terms -%}{%- for t in raw-terms -%}{%- if t != "" and t != " " -%}{{ t | strip }};{%- endif -%}{%- endfor -%}{%- endcapture -%}
-{%- assign terms = terms | split: ";" | sort -%}
-{%- assign uniqueTerms = terms | uniq | sort -%}
-{ "locations": [
-    {% for u in uniqueTerms %}{% assign count = terms | where_exp: 'item', 'item == u' | size %}{ "location" : {{ u | jsonify }}, "count" : {{ count }}, "link" : {{ u | url_param_escape | prepend: '/browse.html#' | absolute_url | jsonify }} }{% unless forloop.last %},
-    {% endunless %}{% endfor %}
+[
+  {
+    "id": "lema_tun",
+    "name_zh": "勒马屯",
+    "name_en": "Lema Tun",
+    "admin_full": "中国 广西 河池市 环江毛南族自治县 下南乡 勒马屯",
+    "geo": { "lat": 24.500, "lon": 108.500 },
+    "notes": "勒马屯：传统山歌核心区之一。女性歌手主导‘放牛歌’类型，歌词里常把早起放牛和家务劳动当成自我介绍。",
+    "photos": []
+  }
 ]
-}{%- endif -%}

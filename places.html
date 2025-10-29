@@ -1,0 +1,57 @@
+---
+layout: page
+title: 地点总览 / Field Sites
+permalink: /places/
+---
+
+<div id="placesList">加载中...</div>
+
+<script>
+const placesList = document.getElementById('placesList');
+
+fetch('{{ "/assets/data/locations.json" | relative_url }}')
+  .then(r => r.json())
+  .then(locations => {
+    placesList.innerHTML = "";
+    locations.forEach(loc => {
+      const card = document.createElement('div');
+      card.style.border = "1px solid #ccc";
+      card.style.borderRadius = "8px";
+      card.style.padding = "1rem 1.2rem";
+      card.style.marginBottom = "1rem";
+      card.style.background = "#fff";
+
+      const locUrl = "{{ '/place.html' | relative_url }}" + "?id=" + encodeURIComponent(loc.id);
+
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:600;font-size:1.05rem;">
+              <a href="${locUrl}">${escapeHTML(loc.name_zh)}</a>
+              <span style="color:#888;font-weight:400;font-size:0.8rem;margin-left:0.4rem;">
+                ${escapeHTML(loc.name_en || "")}
+              </span>
+            </div>
+            <div style="font-size:0.8rem;color:#666;line-height:1.4;">
+              ${escapeHTML(loc.admin_full || "")}<br/>
+              坐标: ${loc.geo ? escapeHTML(loc.geo.lat + ", " + loc.geo.lon) : "无"}
+            </div>
+          </div>
+          <div style="font-size:0.8rem;color:#666;max-width:260px;line-height:1.4;">
+            ${escapeHTML(loc.notes || "")}
+          </div>
+        </div>
+      `;
+      placesList.appendChild(card);
+    });
+  })
+  .catch(err => {
+    console.error(err);
+    placesList.textContent = "无法载入 locations.json";
+  });
+
+function escapeHTML(str){
+  if(!str) return "";
+  return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+</script>
